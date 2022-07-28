@@ -1,0 +1,32 @@
+{
+    "files.associations": {
+        "stdio.h": "c",
+        "mstd_new": "cpp",
+        "*.tcc": "cpp",
+        "algorithm": "cpp",
+        "random": "cpp",
+        "fstream": "cpp",
+        "istream": "cpp",
+        "ostream": "cpp",
+        "regex": "cpp",
+        "utility": "cpp"
+    },
+    "MicroPython.executeButton": [
+        {
+            "text": "▶",
+            "tooltip": "Run",
+            "alignment": "left",
+            "command": "extension.executeFile",
+            "priority": 3.5
+        }
+    ],
+    "MicroPython.syncButton": [
+        {
+            "text": "$(sync)",
+            "tooltip": "sync",
+            "alignment": "left",
+            "command": "extension.execute",
+            "priority": 4
+        }
+    ]
+}
