@@ -18,11 +18,37 @@
 #include <NeoPixelConnect.h>
 #include <stdio.h>
 #include <Arduino.h>
+#include <iostream>
+#include "flicker.h"
+#include "pico.h"
+#include "hardware/rtc.h"
+#include "hardware/gpio.h"
+#include <chrono>
+#include <string>
+#include <time.h>
+
+
+// Get current date/time, format is YYYY-MM-DD.HH:mm:ss
+const std::string currentDateTime() {
+    time_t     now = time(0);
+    struct tm  tstruct;
+    char       buf[80];
+    tstruct = *localtime(&now);
+    // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
+    // for more information about date/time format
+    strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
+
+    return buf;
+}
 
 NeoPixelConnect p(23, 1, pio0, 0);
+using namespace std;
 
-void setup()
-{
+
+void setup(){}
+
+
+void loop(){
     Serial.begin(115200);
     sleep_ms(100);
     Serial.print("Init ok, ch.v.: ");
@@ -30,15 +56,27 @@ void setup()
 
     _gpio_init(LED_BUILTIN);
     gpio_set_dir(LED_BUILTIN, OUTPUT);
-}
-
-
-void loop(){
     // digitalWrite(LED_BUILTIN, 1);
+    Flicker R;
+    Flicker G;
+    Flicker B;
 
-    p.neoPixelFill(random(0, 100), random(0, 100), random(0, 100), true);
-    sleep_ms(300);
-    
+    while(1)
+    {
+        R.update();
+        G.update();
+        B.update();
+        Serial.print("RGB: ");
+        Serial.print(R.getVal());
+        Serial.print(G.getVal());
+        Serial.print(B.getVal());
+        Serial.println();
+        
+        p.neoPixelFill(R.getVal(), G.getVal(), B.getVal(), true);
+        Serial.println(currentDateTime().c_str());
+        sleep_ms(10);
+    }
     //timer.user_data = 25;
+    
 }
 
