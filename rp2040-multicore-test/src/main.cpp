@@ -15,7 +15,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include <NeoPixelConnect.h>
+#include "NeoPixelConnect.h"
 #include <stdio.h>
 #include <Arduino.h>
 #include <iostream>
@@ -23,6 +23,7 @@
 #include "pico.h"
 #include "hardware/rtc.h"
 #include "hardware/gpio.h"
+#include "pico/multicore.h"
 #include <chrono>
 #include <string>
 #include <time.h>
@@ -44,18 +45,20 @@ const std::string currentDateTime() {
 NeoPixelConnect p(23, 1, pio0, 0);
 using namespace std;
 
-
-void setup(){}
+void loop1();
+void setup(){
+}
 
 
 void loop(){
-    Serial.begin(115200);
-    sleep_ms(100);
-    Serial.print("Init ok, ch.v.: ");
-    Serial.println(rp2040_chip_version());
+    //Serial.begin(115200);
+    //sleep_ms(100);
+    //Serial.print("Init ok, ch.v.: ");
+    //Serial.println(rp2040_chip_version());
 
-    _gpio_init(LED_BUILTIN);
-    gpio_set_dir(LED_BUILTIN, OUTPUT);
+    multicore_launch_core1(loop1);
+
+    // _gpio_init(LED_BUILTIN);
     // digitalWrite(LED_BUILTIN, 1);
     Flicker R;
     Flicker G;
@@ -66,17 +69,26 @@ void loop(){
         R.update();
         G.update();
         B.update();
-        Serial.print("RGB: ");
-        Serial.print(R.getVal());
-        Serial.print(G.getVal());
-        Serial.print(B.getVal());
-        Serial.println();
         
         p.neoPixelFill(R.getVal(), G.getVal(), B.getVal(), true);
-        Serial.println(currentDateTime().c_str());
-        sleep_ms(10);
+        // Serial.println(currentDateTime().c_str());
+        multicore_fifo_push_blocking(R.getVal());
+        sleep_ms(20);
     }
     //timer.user_data = 25;
     
 }
 
+void loop1()
+{
+    Serial.begin(115200);
+    gpio_set_dir(LED_BUILTIN, OUTPUT);
+
+    while(1)
+    {
+        gpio_put(LED_BUILTIN, LOW);
+        uint32_t val = multicore_fifo_pop_blocking();
+        gpio_put(LED_BUILTIN, HIGH);
+        Serial.print(F("Updated"));        
+    }
+}
